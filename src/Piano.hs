@@ -10,6 +10,7 @@ module Piano
   , df, ef, gf, af, bf
   -- Chord functions
   , majorChord
+  , majorChordSecondInversion
   , noteFromString
   ) where
 
@@ -217,6 +218,16 @@ addSemitones (Note name acc oct) semitones =
 -- Major chord = root, major third (+4 semitones), perfect fifth (+7 semitones)
 majorChord :: Note -> [Note]
 majorChord root = [root, addSemitones root 4, addSemitones root 7]
+
+-- Construct a major chord in second inversion from a root note
+-- Second inversion = fifth, root (octave up), major third (octave up)
+-- For C major: G, C, E (with C and E in the octave above G)
+majorChordSecondInversion :: Note -> [Note]
+majorChordSecondInversion root =
+  [ addSemitones root 7   -- Perfect fifth (bass note)
+  , addSemitones root 12  -- Root, octave up
+  , addSemitones root 16  -- Major third, octave up
+  ]
 
 -- Parse a note name string to a Note (octave 4)
 noteFromString :: String -> Maybe Note
