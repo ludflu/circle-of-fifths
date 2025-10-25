@@ -48,9 +48,11 @@ pianoSpokeAt label angleDeg index =
     Nothing -> mempty
     Just (Note name acc _) ->
       let angleRad = angleDeg * pi / 180.0
-          -- Position the piano closer to the circle
-          spokeRadius = 130.0
-          pos = p2 (spokeRadius * sin angleRad, spokeRadius * cos angleRad)
+          -- Position the piano keyboards in an elliptical pattern
+          -- Reduce Y (vertical) component to bring top/bottom closer to center
+          spokeRadiusX = 130.0  -- Horizontal spread
+          spokeRadiusY = 120.0  -- Vertical spread (compressed)
+          pos = p2 (spokeRadiusX * sin angleRad, spokeRadiusY * cos angleRad)
           -- Use second inversion for specific indices (G, A, B, Db, Eb, F)
           useSecondInversion = index `elem` [1, 3, 5, 7, 9, 11]
           -- For A (3) and B (5) in second inversion, use octave 2 to keep all notes in range
