@@ -165,10 +165,11 @@ pianoKeyboardWithNotes numOctaves notes = mconcat
     highlightSet = Set.fromList $
       [ pos | n <- notes, Just pos <- [noteToKeyPosition n] ]
 
--- Create a compact 1-octave piano keyboard (scaled down for use in spokes)
+-- Create a compact 2-octave piano keyboard (scaled down for use in spokes)
+-- Shows the major chord notes highlighted once (in the middle octave)
 compactPianoWithNotes :: [Note] -> Diagram B
 compactPianoWithNotes notes =
-  pianoKeyboardWithNotes 1 notes # scale 0.4
+  pianoKeyboardWithNotes 2 notes # scale 0.25
 
 -- Convert a semitone offset to a note
 -- For major chords: root=0, major third=4, perfect fifth=7

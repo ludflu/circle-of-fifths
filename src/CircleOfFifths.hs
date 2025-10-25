@@ -30,13 +30,13 @@ circleNotes =
 -- Angle 0 is at the top (12 o'clock), increases clockwise
 noteBadgeAt :: String -> Double -> Diagram B
 noteBadgeAt label angleDeg =
-  let radius = 100.0  -- Position on the main circle
-      circleSize = 18.0  -- Size of the blue circle
+  let radius = 60.0  -- Position on the main circle (smaller)
+      circleSize = 12.0  -- Size of the blue circle (smaller)
       angleRad = angleDeg * pi / 180.0  -- Convert to radians
       pos = p2 (radius * sin angleRad, radius * cos angleRad)
       -- Create the badge: blue circle with white text on top
       -- Using `atop` to ensure text is on top of circle
-      badge = (text label # fontSize (local 10) # bold # fc white)
+      badge = (text label # fontSize (local 7) # bold # fc white)
            `atop` (circle circleSize # fc blue # lw 1 # lc white)
   in badge # moveTo pos
 
@@ -48,14 +48,14 @@ pianoSpokeAt label angleDeg =
     Nothing -> mempty
     Just rootNote ->
       let angleRad = angleDeg * pi / 180.0
-          -- Position the piano further out from the circle
-          spokeRadius = 150.0
+          -- Position the piano closer to the circle
+          spokeRadius = 130.0
           pos = p2 (spokeRadius * sin angleRad, spokeRadius * cos angleRad)
           -- Get the major chord for this note
           chord = majorChord rootNote
-          -- Create the compact piano
-          piano = compactPianoWithNotes chord
-                # rotate (angleRad @@ rad)  -- Rotate to align with spoke
+          -- Create the compact piano (no rotation, keep horizontal)
+          -- Center it before positioning so it's centered on the spoke position
+          piano = compactPianoWithNotes chord # centerXY
       in piano # moveTo pos
 
 -- Create lines from center to each note position
@@ -68,17 +68,17 @@ radiusLines = mconcat
   , let angleRad = fromIntegral i * 30 * pi / 180.0
   ]
   where
-    innerRadius = 70.0
+    innerRadius = 42.0  -- Scaled down
 
--- The main circle
+-- The main circle (smaller)
 outerCircle :: Diagram B
-outerCircle = circle 100
+outerCircle = circle 60
             # lw 2
             # lc black
             # fc white
 
 innerCircle :: Diagram B
-innerCircle = circle 70
+innerCircle = circle 42
             # lw 1
             # lc lightgray
             # fcA (lightblue `withOpacity` 0.1)
@@ -101,9 +101,9 @@ circleOfFifths =
       | (i, label) <- zip [0..] circleNotes
       ]
 
-    -- Add a title above the circle
+    -- Add a title above the circle (adjusted for smaller circle)
     title = text "Circle of Fifths"
-          # fontSize (local 18)
+          # fontSize (local 14)
           # bold
           # fc black
-          # translateY 130
+          # translateY 180
