@@ -6,8 +6,7 @@ module CircleOfFifths (circleOfFifths) where
 
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
-import Piano (compactPianoWithNotes, majorChord, noteFromString)
-import Data.Maybe (mapMaybe)
+import Piano (compactPianoWithNotes, majorChord, noteFromString, Note(..))
 
 -- Note names for the circle of fifths (clockwise from C at top)
 circleNotes :: [String]
@@ -46,11 +45,13 @@ pianoSpokeAt :: String -> Double -> Diagram B
 pianoSpokeAt label angleDeg =
   case noteFromString label of
     Nothing -> mempty
-    Just rootNote ->
+    Just (Note name acc _) ->
       let angleRad = angleDeg * pi / 180.0
           -- Position the piano closer to the circle
           spokeRadius = 130.0
           pos = p2 (spokeRadius * sin angleRad, spokeRadius * cos angleRad)
+          -- Use octave 3 as root so all chord notes fit in the 2-octave display (octaves 3-4)
+          rootNote = Note name acc 3
           -- Get the major chord for this note
           chord = majorChord rootNote
           -- Create the compact piano (no rotation, keep horizontal)
