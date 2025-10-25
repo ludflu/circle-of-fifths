@@ -29,7 +29,7 @@ circleNotes =
 -- Angle 0 is at the top (12 o'clock), increases clockwise
 noteBadgeAt :: String -> Double -> Diagram B
 noteBadgeAt label angleDeg =
-  let radius = 60.0  -- Position on the main circle (smaller)
+  let radius = 80.0  -- Position on the main circle (smaller)
       circleSize = 12.0  -- Size of the blue circle (smaller)
       angleRad = angleDeg * pi / 180.0  -- Convert to radians
       pos = p2 (radius * sin angleRad, radius * cos angleRad)
@@ -73,7 +73,7 @@ radiusLines = mconcat
 
 -- The main circle (smaller)
 outerCircle :: Diagram B
-outerCircle = circle 60
+outerCircle = circle 80
             # lw 2
             # lc black
             # fc white
