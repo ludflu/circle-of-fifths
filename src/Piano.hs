@@ -18,6 +18,7 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Maybe (mapMaybe)
 
 -- Simple pitch representation
 data Accidental = Flat | Natural | Sharp
@@ -166,11 +167,32 @@ pianoKeyboardWithNotes numOctaves notes = mconcat
     highlightSet = Set.fromList $
       [ pos | n <- notes, Just pos <- [noteToKeyPosition n] ]
 
--- Create a compact 2-octave piano keyboard (scaled down for use in spokes)
--- Shows the major chord notes highlighted once (in the middle octave)
+-- Helper function to get the octave range of notes
+-- Returns (minOctave, maxOctave) or Nothing if no notes
+noteOctaveRange :: [Note] -> Maybe (Int, Int)
+noteOctaveRange notes =
+  case mapMaybe noteToKeyPosition notes of
+    [] -> Nothing
+    positions -> let octaves = map (\(oct, _, _) -> oct) positions
+                     minOct = minimum octaves
+                     maxOct = maximum octaves
+                 in Just (minOct, maxOct)
+
+-- Create a compact piano keyboard (scaled down for use in spokes)
+-- Shows 1 octave if all notes fit in a single octave, otherwise 2 octaves
 compactPianoWithNotes :: [Note] -> Diagram B
 compactPianoWithNotes notes =
-  pianoKeyboardWithNotes 2 notes # scale 0.25
+  case noteOctaveRange notes of
+    Nothing -> pianoKeyboardWithNotes 1 notes # scale 0.25  -- No notes, show 1 octave
+    Just (minOct, maxOct)
+      | minOct == maxOct ->
+          -- All notes in same octave - show just that octave
+          let highlightSet = Set.fromList $
+                [ pos | n <- notes, Just pos <- [noteToKeyPosition n] ]
+          in octaveWithHighlights 0 minOct highlightSet # scale 0.25
+      | otherwise ->
+          -- Notes span multiple octaves - show 2 octaves
+          pianoKeyboardWithNotes 2 notes # scale 0.25
 
 -- Convert a semitone offset to a note
 -- For major chords: root=0, major third=4, perfect fifth=7
