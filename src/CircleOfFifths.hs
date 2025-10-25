@@ -91,8 +91,9 @@ innerCircle = circle 42
 -- Create the complete circle of fifths diagram
 circleOfFifths :: Diagram B
 circleOfFifths =
-  -- Layer elements with badges on top
-  noteBadges `atop` (title `atop` (pianoSpokes `atop` (radiusLines `atop` (innerCircle `atop` outerCircle))))
+  -- Layer elements with badges on top, then add 10% padding
+  (noteBadges `atop` (title `atop` (pianoSpokes `atop` (radiusLines `atop` (innerCircle `atop` outerCircle)))))
+  # pad 1.1  -- Add 10% whitespace around edges
   where
     -- Position note badges at 30-degree intervals (12 notes in 360 degrees)
     noteBadges = mconcat
