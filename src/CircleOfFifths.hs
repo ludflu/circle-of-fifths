@@ -54,7 +54,7 @@ pianoSpokeAt label angleDeg index =
           -- Use octave 3 as root so all chord notes fit in the 2-octave display (octaves 3-4)
           rootNote = Note name acc 3
           -- Use second inversion for specific indices (D, E, F#/Gb, Db, Eb, F)
-          useSecondInversion = index `elem` [2, 4, 6, 7, 9, 11]
+          useSecondInversion = index `elem` [1, 3, 5, 7, 9, 11]
           chord = if useSecondInversion
                   then majorChordSecondInversion rootNote
                   else majorChord rootNote
@@ -109,7 +109,7 @@ circleOfFifths =
       ]
 
     -- Add a title above the circle (adjusted for smaller circle)
-    title = text "Circle of Fifths"
+    title = text "Circle of Fifths Alternating 2nd Inversions"
           # fontSize (local 14)
           # bold
           # fc black
