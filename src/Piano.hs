@@ -34,7 +34,7 @@ blackKey = rect blackKeyWidth blackKeyHeight
 -- Black keys appear between: C-D, D-E, F-G, G-A, A-B
 -- Positions: 1, 2, 4, 5, 6 (in terms of white key spacing)
 blackKeyPositions :: [Double]
-blackKeyPositions = [0.7, 1.7, 3.7, 4.7, 5.7]
+blackKeyPositions = [0.5, 1.5, 3.5, 4.5, 5.5]
 
 -- Create a single octave starting at a given x position
 octave :: Double -> Diagram B
