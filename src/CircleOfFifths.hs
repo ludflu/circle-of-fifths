@@ -49,9 +49,11 @@ pianoSpokeAt label angleDeg index =
     Just (Note name acc _) ->
       let angleRad = angleDeg * pi / 180.0
           -- Position the piano keyboards in an elliptical pattern
-          -- Reduce Y (vertical) component to bring top/bottom closer to center
+          -- Use extra vertical spread for top (0°) and bottom (180°) to avoid overlap
           spokeRadiusX = 130.0  -- Horizontal spread
-          spokeRadiusY = 120.0  -- Vertical spread (compressed)
+          spokeRadiusY = if angleDeg == 0 || angleDeg == 180
+                         then 140.0  -- Extra vertical spread for C and F♯/G♭
+                         else 120.0  -- Normal vertical spread for others
           pos = p2 (spokeRadiusX * sin angleRad, spokeRadiusY * cos angleRad)
           -- Use second inversion for specific indices (G, A, B, Db, Eb, F)
           useSecondInversion = index `elem` [1, 3, 5, 7, 9, 11]
