@@ -1,12 +1,17 @@
 module Piano
   ( pianoKeyboard
   , pianoKeyboardWithNotes
+  , compactPianoWithNotes
   , Note(..)
   , Accidental(..)
   -- Note constructors
   , c, d, e, f, g, a, b
   , cs, ds, fs, gs, as
   , df, ef, gf, af, bf
+  -- Chord functions
+  , majorChord
+  , majorChordSecondInversion
+  , noteFromString
   ) where
 
 import Diagrams.Prelude
@@ -160,3 +165,83 @@ pianoKeyboardWithNotes numOctaves notes = mconcat
     -- Convert notes to key positions and store in a Set for fast lookup
     highlightSet = Set.fromList $
       [ pos | n <- notes, Just pos <- [noteToKeyPosition n] ]
+
+-- Create a compact 2-octave piano keyboard (scaled down for use in spokes)
+-- Shows the major chord notes highlighted once (in the middle octave)
+compactPianoWithNotes :: [Note] -> Diagram B
+compactPianoWithNotes notes =
+  pianoKeyboardWithNotes 2 notes # scale 0.25
+
+-- Convert a semitone offset to a note
+-- For major chords: root=0, major third=4, perfect fifth=7
+addSemitones :: Note -> Int -> Note
+addSemitones (Note name acc oct) semitones =
+  let -- Convert note to chromatic position (0-11)
+      baseChromatic = case name of
+        0 -> 0  -- C
+        1 -> 2  -- D
+        2 -> 4  -- E
+        3 -> 5  -- F
+        4 -> 7  -- G
+        5 -> 9  -- A
+        6 -> 11 -- B
+        _ -> 0
+
+      accidentalOffset = case acc of
+        Flat -> -1
+        Natural -> 0
+        Sharp -> 1
+
+      chromatic = baseChromatic + accidentalOffset
+      newChromatic = (chromatic + semitones) `mod` 12
+      newOctave = oct + ((chromatic + semitones) `div` 12)
+
+      -- Convert back to note
+      (newName, newAcc) = case newChromatic of
+        0 -> (0, Natural)  -- C
+        1 -> (0, Sharp)    -- C#
+        2 -> (1, Natural)  -- D
+        3 -> (2, Flat)     -- Eb
+        4 -> (2, Natural)  -- E
+        5 -> (3, Natural)  -- F
+        6 -> (3, Sharp)    -- F#
+        7 -> (4, Natural)  -- G
+        8 -> (4, Sharp)    -- G#
+        9 -> (5, Natural)  -- A
+        10 -> (6, Flat)    -- Bb
+        11 -> (6, Natural) -- B
+        _ -> (0, Natural)
+
+  in Note newName newAcc newOctave
+
+-- Construct a major chord from a root note
+-- Major chord = root, major third (+4 semitones), perfect fifth (+7 semitones)
+majorChord :: Note -> [Note]
+majorChord root = [root, addSemitones root 4, addSemitones root 7]
+
+-- Construct a major chord in second inversion from a root note
+-- Second inversion = fifth, root (octave up), major third (octave up)
+-- For C major: G, C, E (with C and E in the octave above G)
+majorChordSecondInversion :: Note -> [Note]
+majorChordSecondInversion root =
+  [ addSemitones root 7   -- Perfect fifth (bass note)
+  , addSemitones root 12  -- Root, octave up
+  , addSemitones root 16  -- Major third, octave up
+  ]
+
+-- Parse a note name string to a Note (octave 4)
+noteFromString :: String -> Maybe Note
+noteFromString s = case s of
+  "C" -> Just (c 4)
+  "G" -> Just (g 4)
+  "D" -> Just (d 4)
+  "A" -> Just (a 4)
+  "E" -> Just (e 4)
+  "B" -> Just (b 4)
+  "F♯/G♭" -> Just (fs 4)  -- F# for major chord
+  "D♭" -> Just (df 4)
+  "A♭" -> Just (af 4)
+  "E♭" -> Just (ef 4)
+  "B♭" -> Just (bf 4)
+  "F" -> Just (f 4)
+  _ -> Nothing

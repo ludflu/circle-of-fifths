@@ -11,7 +11,7 @@ build:
 # Render the Circle of Fifths diagram
 circle: build
 	@echo "Generating Circle of Fifths diagram..."
-	@cabal run circle-of-fourths -- -o circle.svg -w 400
+	@cabal run circle-of-fourths -- -o circle.svg -w 800
 	@echo "✓ Created circle.svg"
 
 # Render the Piano keyboard with highlighted notes
@@ -39,7 +39,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make all       - Build project and generate all diagrams (default)"
 	@echo "  make build     - Build the Haskell project"
-	@echo "  make circle    - Generate Circle of Fifths diagram (circle.svg)"
+	@echo "  make circle    - Generate Circle of Fifths with piano chord spokes (circle.svg)"
 	@echo "  make keyboard  - Generate Piano keyboard diagram (keyboard.svg)"
 	@echo "  make diagrams  - Generate all diagrams"
 	@echo "  make clean     - Remove generated SVG files and build artifacts"
