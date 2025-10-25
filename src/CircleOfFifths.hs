@@ -51,10 +51,14 @@ pianoSpokeAt label angleDeg index =
           -- Position the piano closer to the circle
           spokeRadius = 130.0
           pos = p2 (spokeRadius * sin angleRad, spokeRadius * cos angleRad)
-          -- Use octave 3 as root so all chord notes fit in the 2-octave display (octaves 3-4)
-          rootNote = Note name acc 3
-          -- Use second inversion for specific indices (D, E, F#/Gb, Db, Eb, F)
+          -- Use second inversion for specific indices (G, A, B, Db, Eb, F)
           useSecondInversion = index `elem` [1, 3, 5, 7, 9, 11]
+          -- For A (3) and B (5) in second inversion, use octave 2 to keep all notes in range
+          -- Otherwise use octave 3 so all chord notes fit in the 2-octave display (octaves 3-4)
+          octaveToUse = if useSecondInversion && (index == 3 || index == 5)
+                        then 2
+                        else 3
+          rootNote = Note name acc octaveToUse
           chord = if useSecondInversion
                   then majorChordSecondInversion rootNote
                   else majorChord rootNote
