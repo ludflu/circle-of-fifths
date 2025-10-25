@@ -169,7 +169,7 @@ pianoKeyboardWithNotes numOctaves notes = mconcat
 -- Shows the major chord notes highlighted once (in the middle octave)
 compactPianoWithNotes :: [Note] -> Diagram B
 compactPianoWithNotes notes =
-  pianoKeyboardWithNotes 1 notes # scale 0.25
+  pianoKeyboardWithNotes 2 notes # scale 0.25
 
 -- Convert a semitone offset to a note
 -- For major chords: root=0, major third=4, perfect fifth=7
