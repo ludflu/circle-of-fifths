@@ -77,9 +77,9 @@ whiteKey = rect whiteKeyWidth whiteKeyHeight
 -- Create a highlighted white key
 highlightedWhiteKey :: Diagram B
 highlightedWhiteKey = rect whiteKeyWidth whiteKeyHeight
-                    # fc lightblue
+                    # fc lightcoral
                     # lw 2
-                    # lc blue
+                    # lc red
 
 -- Create a black key
 blackKey :: Diagram B
