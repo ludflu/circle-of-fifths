@@ -6,6 +6,8 @@ module CircleOfFifths (circleOfFifths) where
 
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
+import Piano (compactPianoWithNotes, majorChord, noteFromString)
+import Data.Maybe (mapMaybe)
 
 -- Note names for the circle of fifths (clockwise from C at top)
 circleNotes :: [String]
@@ -38,6 +40,24 @@ noteBadgeAt label angleDeg =
            `atop` (circle circleSize # fc blue # lw 1 # lc white)
   in badge # moveTo pos
 
+-- Create a piano spoke radiating outward from a note position
+-- Shows a compact 1-octave piano with the major chord highlighted
+pianoSpokeAt :: String -> Double -> Diagram B
+pianoSpokeAt label angleDeg =
+  case noteFromString label of
+    Nothing -> mempty
+    Just rootNote ->
+      let angleRad = angleDeg * pi / 180.0
+          -- Position the piano further out from the circle
+          spokeRadius = 150.0
+          pos = p2 (spokeRadius * sin angleRad, spokeRadius * cos angleRad)
+          -- Get the major chord for this note
+          chord = majorChord rootNote
+          -- Create the compact piano
+          piano = compactPianoWithNotes chord
+                # rotate (angleRad @@ rad)  -- Rotate to align with spoke
+      in piano # moveTo pos
+
 -- Create lines from center to each note position
 radiusLines :: Diagram B
 radiusLines = mconcat
@@ -66,12 +86,18 @@ innerCircle = circle 70
 -- Create the complete circle of fifths diagram
 circleOfFifths :: Diagram B
 circleOfFifths =
-  -- Layer badges on top using atop
-  noteBadges `atop` (title `atop` (radiusLines `atop` (innerCircle `atop` outerCircle)))
+  -- Layer elements with badges on top
+  noteBadges `atop` (title `atop` (pianoSpokes `atop` (radiusLines `atop` (innerCircle `atop` outerCircle))))
   where
     -- Position note badges at 30-degree intervals (12 notes in 360 degrees)
     noteBadges = mconcat
       [ noteBadgeAt label (fromIntegral i * 30)
+      | (i, label) <- zip [0..] circleNotes
+      ]
+
+    -- Position piano spokes at each note position
+    pianoSpokes = mconcat
+      [ pianoSpokeAt label (fromIntegral i * 30)
       | (i, label) <- zip [0..] circleNotes
       ]
 
