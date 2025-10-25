@@ -1,7 +1,52 @@
-module Piano (pianoKeyboard) where
+module Piano
+  ( pianoKeyboard
+  , pianoKeyboardWithNotes
+  , Note(..)
+  , Accidental(..)
+  -- Note constructors
+  , c, d, e, f, g, a, b
+  , cs, ds, fs, gs, as
+  , df, ef, gf, af, bf
+  ) where
 
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
+import Data.Set (Set)
+import qualified Data.Set as Set
+
+-- Simple pitch representation
+data Accidental = Flat | Natural | Sharp
+  deriving (Eq, Ord, Show)
+
+data Note = Note
+  { noteName :: Int      -- 0=C, 1=D, 2=E, 3=F, 4=G, 5=A, 6=B
+  , accidental :: Accidental
+  , octave :: Int        -- Octave number (4 is middle C octave)
+  } deriving (Eq, Ord, Show)
+
+-- Convenience constructors for notes
+c, d, e, f, g, a, b :: Int -> Note
+c oct = Note 0 Natural oct
+d oct = Note 1 Natural oct
+e oct = Note 2 Natural oct
+f oct = Note 3 Natural oct
+g oct = Note 4 Natural oct
+a oct = Note 5 Natural oct
+b oct = Note 6 Natural oct
+
+cs, ds, fs, gs, as :: Int -> Note
+cs oct = Note 0 Sharp oct
+ds oct = Note 1 Sharp oct
+fs oct = Note 3 Sharp oct
+gs oct = Note 4 Sharp oct
+as oct = Note 5 Sharp oct
+
+df, ef, gf, af, bf :: Int -> Note
+df oct = Note 1 Flat oct
+ef oct = Note 2 Flat oct
+gf oct = Note 4 Flat oct
+af oct = Note 5 Flat oct
+bf oct = Note 6 Flat oct
 
 -- Key dimensions
 whiteKeyWidth :: Double
@@ -23,6 +68,13 @@ whiteKey = rect whiteKeyWidth whiteKeyHeight
          # lw 1
          # lc black
 
+-- Create a highlighted white key
+highlightedWhiteKey :: Diagram B
+highlightedWhiteKey = rect whiteKeyWidth whiteKeyHeight
+                    # fc lightblue
+                    # lw 2
+                    # lc blue
+
 -- Create a black key
 blackKey :: Diagram B
 blackKey = rect blackKeyWidth blackKeyHeight
@@ -30,25 +82,61 @@ blackKey = rect blackKeyWidth blackKeyHeight
          # lw 1
          # lc black
 
+-- Create a highlighted black key
+highlightedBlackKey :: Diagram B
+highlightedBlackKey = rect blackKeyWidth blackKeyHeight
+                    # fc lightcoral
+                    # lw 2
+                    # lc red
+
 -- Position of black keys relative to the start of an octave
 -- Black keys appear between: C-D, D-E, F-G, G-A, A-B
--- Positions: 1, 2, 4, 5, 6 (in terms of white key spacing)
 blackKeyPositions :: [Double]
 blackKeyPositions = [0.5, 1.5, 3.5, 4.5, 5.5]
 
+-- Key position within an octave (octave, position, isBlackKey)
+type KeyPosition = (Int, Double, Bool)
+
+-- Map a note to a key position on the keyboard
+-- Returns (octave_relative_to_C4, position_within_octave, is_black_key)
+noteToKeyPosition :: Note -> Maybe KeyPosition
+noteToKeyPosition (Note name acc oct) =
+  let -- Adjust octave relative to C4 (middle C)
+      relativeOctave = oct - 4
+
+      -- Get base position for the note name
+      basePos = fromIntegral name :: Double
+
+      -- Adjust for accidentals
+      result = case acc of
+        Sharp -> Just (relativeOctave, basePos + 0.5, True)
+        Flat  -> Just (relativeOctave, basePos - 0.5, True)
+        Natural -> Just (relativeOctave, basePos, False)
+
+  in result
+
 -- Create a single octave starting at a given x position
-octave :: Double -> Diagram B
-octave startX =   blackKeys <> whiteKeys
+-- with optional highlighted keys
+octaveWithHighlights :: Double -> Int -> Set KeyPosition -> Diagram B
+octaveWithHighlights startX octaveNum highlights = blackKeys <> whiteKeys
   where
+    -- Check if a key should be highlighted
+    isHighlighted pos isBlack = Set.member (octaveNum, pos, isBlack) highlights
+
     -- 7 white keys in an octave
     whiteKeys = mconcat
-      [ whiteKey # translateX (startX + fromIntegral i * whiteKeyWidth)
+      [ (if isHighlighted (fromIntegral i) False
+         then highlightedWhiteKey
+         else whiteKey)
+        # translateX (startX + fromIntegral i * whiteKeyWidth)
       | i <- [0..6]
       ]
 
     -- 5 black keys positioned above white keys
     blackKeys = mconcat
-      [ blackKey
+      [ (if isHighlighted pos True
+         then highlightedBlackKey
+         else blackKey)
         # translateX (startX + pos * whiteKeyWidth)
         # translateY (whiteKeyHeight / 2 - blackKeyHeight / 2)
       | pos <- blackKeyPositions
@@ -56,7 +144,19 @@ octave startX =   blackKeys <> whiteKeys
 
 -- Create a piano keyboard with the specified number of octaves
 pianoKeyboard :: Int -> Diagram B
-pianoKeyboard numOctaves = mconcat
-  [ octave (fromIntegral i * 7 * whiteKeyWidth)
+pianoKeyboard numOctaves = pianoKeyboardWithNotes numOctaves []
+
+-- Create a piano keyboard with highlighted notes
+-- The keyboard is centered around octave 4 (middle C)
+pianoKeyboardWithNotes :: Int -> [Note] -> Diagram B
+pianoKeyboardWithNotes numOctaves notes = mconcat
+  [ octaveWithHighlights (fromIntegral i * 7 * whiteKeyWidth) (i - offset) highlightSet
   | i <- [0..numOctaves-1]
   ]
+  where
+    -- Offset to center around middle C (octave 4)
+    offset = numOctaves `div` 2
+
+    -- Convert notes to key positions and store in a Set for fast lookup
+    highlightSet = Set.fromList $
+      [ pos | n <- notes, Just pos <- [noteToKeyPosition n] ]
