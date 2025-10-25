@@ -81,7 +81,7 @@ radiusLines = mconcat
   , let angleRad = fromIntegral i * 30 * pi / 180.0
   ]
   where
-    innerRadius = 42.0  -- Scaled down
+    innerRadius = 80.0  -- Scaled down
 
 -- The main circle (smaller)
 outerCircle :: Diagram B
@@ -91,7 +91,7 @@ outerCircle = circle 80
             # fc white
 
 innerCircle :: Diagram B
-innerCircle = circle 42
+innerCircle = circle 80
             # lw 1
             # lc lightgray
             # fcA (lightblue `withOpacity` 0.1)
